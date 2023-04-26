@@ -4,17 +4,17 @@ sys.path.append("/telegram_bot")
 from create_bot import bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 sys.path.append("/telegram_bot/markups")
-from markups_file import load_markup
+from markups import load_markup
 
 #connects to database and create table with two columns
 def sql_start():
     global base, cursor
-    base = sqlite3.connect("db/database.db")
+    base = sqlite3.connect("db/DataBase1.db")
     cursor = base.cursor()
 
 #adds values to database's columns
-def add_value(name, available):
-    cursor.execute("UPDATE game_checker SET available == ? WHERE game_name == ?", (available, name))
+def add_value(name, quantity, frame):
+    cursor.execute(f"UPDATE {frame} SET quantity == ? WHERE game_name == ?", (quantity, name))
     base.commit()
     print(name + " Updated successfully")
 
@@ -29,23 +29,26 @@ def add_order(ordered, order_text, order_paid, rent_price, order_price, username
     base.commit()
 
 #checks if any games are available
-def checker():
-    check = cursor.execute("SELECT * FROM game_checker WHERE available == 1 LIMIT 1").fetchone()
+def checker(frame):
+    # check = cursor.execute(f"SELECT * FROM {frame} WHERE quantity > 0").fetchone()
+    query = f"SELECT * FROM {frame} WHERE quantity > 0"
+    print(query)
+    check = cursor.execute(query).fetchone()
     base.commit()
     return check
 
 #sends message with each game
-async def print_products(message, offset, limit, showed):
-    for obj in cursor.execute(f"SELECT * FROM game_checker WHERE available == 1 LIMIT {limit} OFFSET {offset}").fetchall():
+async def print_products(message, offset, limit, showed, frame):
+    for obj in cursor.execute(f"SELECT * FROM {frame} WHERE (quantity > 0);").fetchall(): # WHERE available == 1 LIMIT {limit} OFFSET {offset}
         #adds inline markup for adding to basket
-        add_markup = InlineKeyboardMarkup(resize_keyboard = True, row_width = 1)
-        day_btn = InlineKeyboardButton(f"Арендовать '{obj[0]}' на день", callback_data = f"add_day_{obj[0]}")
-        week_btn = InlineKeyboardButton(f"Арендовать '{obj[0]}' на неделю", callback_data = f"add_week_{obj[0]}")
-        add_markup.add(day_btn, week_btn)
+        add_markup = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
+        btn = InlineKeyboardButton(f"Добавить '{obj[0]}' в корзину", callback_data = f"add_day_{obj[0]}")
+        # week_btn = InlineKeyboardButton(f"Арендовать '{obj[0]}' на неделю", callback_data = f"add_week_{obj[0]}")
+        add_markup.add(btn)
         #sends all info about each product with button to order
-        await bot.send_photo(message.chat.id, obj[5] , f'‎\n🥏 <b>{obj[0]}</b>\n\n🔹 Цена за день: {obj[2]}\n\n🔹 Цена за неделю: {obj[3]}\n\n🔹 Залог: {obj[4]}', parse_mode="html", reply_markup = add_markup)
+        await bot.send_photo(message.chat.id, obj[3] , f'‎\n🥏 <b>{obj[0]}</b>\n\n🔹 Цена: {obj[1]}\n\n', parse_mode="html", reply_markup = add_markup)
     #counts how many games are in db
-    row_counter = cursor.execute("SELECT COUNT(*) FROM game_checker WHERE available == 1").fetchone()
+    row_counter = cursor.execute("SELECT COUNT(*) FROM {frame} WHERE quantity > 0").fetchone()
     counter = row_counter[0]
     #cheks if it is ok to show load more button
     if counter > showed and counter != showed:
@@ -56,8 +59,9 @@ async def print_products(message, offset, limit, showed):
         await bot.send_message(message.chat.id, f"Показано <b>{showed}</b> игр из <b>{counter}</b>", parse_mode='html')
 
 #gets paricular game's info
-async def get_info(name):
-    product = cursor.execute("SELECT game_name, price_day, price_week, deposit FROM game_checker WHERE game_name == ?", (name,)).fetchmany()
+async def get_info(name, frame):
+    product = cursor.execute(f"SELECT product, price, floors FROM {frame} WHERE product == ?", (name,)).fetchmany()
+    print(product)
     base.commit()
     return product
 

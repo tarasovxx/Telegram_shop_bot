@@ -1,5 +1,3 @@
-![greeting_git](https://user-images.githubusercontent.com/99086730/163854878-69b5e2d4-8a32-438c-9f9f-b635e88efda2.png)
-
 
 # 🔷 Telegram shop bot
 This is an example of a boardgames rental shop with an admin panel, database and payment card in Telegram messenger, which is written using Aiogram Python.

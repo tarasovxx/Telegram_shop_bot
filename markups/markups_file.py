@@ -1,7 +1,14 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 
+btn1: KeyboardButton = KeyboardButton(text='Корпус 1')
+btn2: KeyboardButton = KeyboardButton(text='Корпус 2')
+btn3: KeyboardButton = KeyboardButton(text='Корпус 3')
+btn4: KeyboardButton = KeyboardButton(text='Кошка')
+
+kb_client = ReplyKeyboardMarkup(keyboard=[[btn1, btn2, btn3, btn4]], resize_keyboard=True, one_time_keyboard=True)
+
 #creating keyboard buttons for start menu keyboard
-choose_game = KeyboardButton("🎮 Выбрать игру")
+choose_game = KeyboardButton("🍫 Продукты")
 menu_btn = KeyboardButton("🏠 Главное меню")
 
 #adding some keyboard buttons to start menu keyboard
@@ -9,15 +16,15 @@ menu_markup = ReplyKeyboardMarkup(resize_keyboard= True).add(menu_btn)
 
 #creating keyboard buttons for main menu keyboard
 about_btn = KeyboardButton("🌀 О нас")
-faq_btn = KeyboardButton("⭐️ FAQ")
+faq_btn = KeyboardButton("🆔️ ID")
 ask_btn = KeyboardButton("🖌 Спросить")
-suggestion_btn = KeyboardButton("✉️ Предложить игру")
-
-#adding all keyboard buttons to main menu keyboard
-main_markup = ReplyKeyboardMarkup(resize_keyboard = True).add(about_btn, faq_btn, ask_btn, choose_game, suggestion_btn)
+suggestion_btn = KeyboardButton("🔙 Вернуться")
 
 #creating basket button
 basket_btn = KeyboardButton("🗑 Корзина")
+
+#adding all keyboard buttons to main menu keyboard
+main_markup = ReplyKeyboardMarkup(resize_keyboard = True).add(about_btn, faq_btn, basket_btn, choose_game, suggestion_btn)
 
 #creating remove from basket button
 basket_remove_btn = KeyboardButton("✂️ Убрать из корзины")
@@ -26,7 +33,7 @@ basket_remove_btn = KeyboardButton("✂️ Убрать из корзины")
 order_markup = ReplyKeyboardMarkup(resize_keyboard = True,).add(basket_btn, menu_btn)
 
 #adding main markup with basket
-basket_main_markup = ReplyKeyboardMarkup(resize_keyboard = True).add(about_btn, faq_btn, ask_btn, basket_btn, suggestion_btn)
+basket_main_markup = ReplyKeyboardMarkup(resize_keyboard = True).add(about_btn, faq_btn, basket_btn, choose_game, suggestion_btn)
 
 #creating buy button
 buy_btn = KeyboardButton("🟢 Оформить")

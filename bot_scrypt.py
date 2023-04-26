@@ -6,17 +6,17 @@ from create_bot import bot, dp
 #importing all database functions 
 from db import sql_start, add_value, add_user, add_order, print_products, get_info, checker, receive_method, add_suggestion, pay_method_db, add_check, get_check, delete_check
 #importing all keyboards
-from markups import order_markup, main_markup, basket_markup, pick_method_markup, buy_markup, pay_method, cash_markup, menu_markup, basket_main_markup, pay_menu
+from markups import kb_client, order_markup, main_markup, basket_markup, pick_method_markup, buy_markup, pay_method, cash_markup, menu_markup, basket_main_markup, pay_menu
 #importing all admon functions
-from admin import send_order, send_question
+# from admin import send_order, send_question
 #importing qiwip2p for payment
-from pyqiwip2p import QiwiP2P
+# from pyqiwip2p import QiwiP2P
 import random
+import re
 
 #some necessary variables
 choices = []
 rent_price = 0
-deposit_price = 0
 final_price = 0
 offset = 0
 limit = 5
@@ -24,8 +24,10 @@ showed = limit
 message_def = ""
 name = ""
 remove_check = []
+corpus = ""
+flag = True
 
-p2p = QiwiP2P(auth_key = "")
+# p2p = QiwiP2P(auth_key = "")
 
 #adds some states for user
 class Address(StatesGroup):
@@ -47,7 +49,10 @@ async def begin(message: types.Message):
     sql_start()
     add_user(name)
     #greeting photo
-    await bot.send_photo(message.chat.id, photo=open("ui/img/greeting_photo.png", "rb"), reply_markup = main_markup)
+    await bot.send_photo(message.chat.id, photo=open("ui/img/greeting_photo.png", "rb"), reply_markup=kb_client)
+
+
+
 
 #show basket info by command
 @dp.message_handler(commands = ["basket"])
@@ -80,47 +85,51 @@ async def choose_game(message: types.Message):
     showed = limit
     #checks in db if any games are available and returns number
     sql_start()
-    check = checker()
+    check = checker(corpus)
     message_def = message
     #checks if any games are available
     if check is not None:
-        await bot.send_message(message.chat.id, "🎮 Игры в наличии:", reply_markup = order_markup)
+        await bot.send_message(message.chat.id, "🍫 Продукты в наличии:", reply_markup = order_markup)
         #prints all games from db (connector.py function)
-        await print_products(message, offset, limit, showed)
+        await print_products(message, offset, limit, showed, corpus)
         offset += limit
         showed += limit
     else:
-        await bot.send_message(message.chat.id, "📭 Игр в наличии нет")
+        await bot.send_message(message.chat.id, "🍫 Продуктов в наличии нет")
 
 #reply buttons funcrions
 @dp.message_handler(content_types = ['text'])
 async def text(message: types.Message):
-    global offset, limit, showed, message_def, name, choices, remove_check
+    global offset, limit, showed, message_def, name, choices, remove_check, corpus
 
-    #if message text = choose game
-    if message.text == "🎮 Выбрать игру":
+    #if message text = choose game    if (message.text in ['Корпус 1', 'Корпус 2', 'Корпус 3', 'Кошка']):
+    if message.text in ['Корпус 1', 'Корпус 2', 'Корпус 3', 'Кошка']:
+        # corpus = re.sub(r'\s+', '_', message.text.strip())
+        corpus = message.text.replace(' ', '_')
+        await bot.send_message(message.chat.id, "Отлично, выбери пункт меню", reply_markup=main_markup)
+    if message.text == "🍫 Продукты":
         offset = 0
         showed = limit
         #checks in db if any games are available and returns number
         sql_start()
-        check = checker()
+        check = checker(corpus)
         message_def = message
         #checks if any games are available
         if check is not None:
-            await bot.send_message(message.chat.id, "🎮 Игры в наличии:", reply_markup = order_markup)
+            await bot.send_message(message.chat.id, "🍫 Продукты:", reply_markup = order_markup)
             #prints all games from db (connector.py function)
-            await print_products(message, offset, limit, showed)
+            await print_products(message, offset, limit, showed, corpus)
             offset += limit
             showed += limit
         else:
-            await bot.send_message(message.chat.id, "📭 Игр в наличии нет")
+            await bot.send_message(message.chat.id, "🍫 Продуктов в наличии нет")
 
     #if message text = basket
     elif message.text == "🗑 Корзина":
         basket_games = "\n\n🎲 ".join(choices)
         #if basket is not empty
         if choices != []:
-            await bot.send_message(message.chat.id, "<b>Корзина: </b>\n\n🎲 {games}\n\n<b>Сумма аренды:</b> {rent}\n\n<b>Сумма залога:</b> {deposit_price}\n\n<b>Общая сумма:</b> {final_price} ".format(games=basket_games, rent=rent_price, final_price=final_price, deposit_price=deposit_price), 
+            await bot.send_message(message.chat.id, "<b>Корзина: </b>\n\n🍫 {games}\n\n<b>Цена:</b> {rent}\n\n<b>Общая сумма:</b> {final_price} ".format(games=basket_games, rent=rent_price, final_price=final_price),
                             parse_mode="html", reply_markup = basket_markup)
         #if basket is empty
         elif choices == []:
@@ -138,9 +147,9 @@ async def text(message: types.Message):
     elif message.text == "🌀 О нас":
         await bot.send_message(message.chat.id, "📘 <b>Borent</b> - это новый сервис, предоставляющий настольные игры в аренду на день и на неделю.\n\n🌟 Ассортимент игр постоянно увеличивается\n\n🎯 Прислушиваемся к вашим предложениям и идеям\n\n🤗 Ждем каждого в нашем сервисе!", parse_mode="html")
     
-    elif message.text == "⭐️ FAQ":
-        await bot.send_message(message.chat.id, "🏮 Ответы на популярные вопросы\n\n🔷 <b>Как мне забрать мой заказ?</b>\n🔹 Вы можете заказать доставку вашего заказа (платно), либо забрать его по адресу(бесплатно).\n\n🔷 <b>Как проходит оплата заказа?</b>\n🔹 После того, как вы оформили заказ, вы можете выбрать способ оплаты: банковская карта, наличные. Оплата наличными принимается только при самовывозе. Вы сможете оплатить заказ банковской картой по ссылке, полученной от бота.\n\n🔷 <b>Как мне вернуть заказ?</b>\n🔹Возврат заказа происходит по адресу:\n\n🔷 <b>Продавец долго не отвечает, что делать?</b>\n🔹 Свяжитесь с ним напрямую, ссылка на чат в телеграмме\n\n", parse_mode="html")
-    
+    elif message.text == "🆔️ ID":
+        #await bot.send_message(message.chat.id, "" , parse_mode="html")#🏮 Ответы на популярные вопросы\n\n🔷 <b>Как мне забрать мой заказ?</b>\n🔹 Вы можете заказать доставку вашего заказа (платно), либо забрать его по адресу(бесплатно).\n\n🔷 <b>Как проходит оплата заказа?</b>\n🔹 После того, как вы оформили заказ, вы можете выбрать способ оплаты: банковская карта, наличные. Оплата наличными принимается только при самовывозе. Вы сможете оплатить заказ банковской картой по ссылке, полученной от бота.\n\n🔷 <b>Как мне вернуть заказ?</b>\n🔹Возврат заказа происходит по адресу:\n\n🔷 <b>Продавец долго не отвечает, что делать?</b>\n🔹 Свяжитесь с ним напрямую, ссылка на чат в телеграмме\n\n
+        await bot.send_message(message.chat.id, f'Ваш ID: {message.from_user.id}\nВаш корпус: {corpus}\n')
     #if message text = price
     elif message.text == "🖌 Спросить":
         await Ask.question.set()
@@ -235,10 +244,11 @@ async def text(message: types.Message):
         await bot.send_message(message.chat.id, "Выберите способ оплаты:", reply_markup = pay_method)
 
     #if message text = suggest a new game
-    elif message.text == "✉️ Предложить игру":
+    elif message.text == "🔙 Вернуться":
         #activates state for saving suggestion from user
-        await Suggestion.suggestion.set()
-        await bot.send_message(message.chat.id, "⌨️ Введите названия игр, которые хотели бы увидеть у нас в сервисе")
+        # await Suggestion.suggestion.set()
+        # await bot.send_message(message.chat.id, "⌨️ Введите названия игр, которые хотели бы увидеть у нас в сервисе")
+        await bot.send_message(message.chat.id, "Выбери корпус", reply_markup=kb_client)
     
 #saves address from message
 @dp.message_handler(state = Address.address)
@@ -297,7 +307,7 @@ async def check(callback: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data.startswith("add_"))
 async def add_to_basket(callback: types.CallbackQuery):
 
-    global rent_price, final_price, deposit_price, offset, limit, showed
+    global rent_price, final_price, offset, limit, showed, floor
 
     #adds game's price per day and info to basket  
     if callback.data.startswith("add_day_"):
@@ -305,16 +315,18 @@ async def add_to_basket(callback: types.CallbackQuery):
         if callback.data.replace("add_day_", "") not in choices:
             #gets game's info from db
             sql_start()
-            product = await get_info(callback.data.replace("add_day_", ""))
+            print("FDAHFHUDSVFJVADFADF**************************************************************")
+            product = await get_info(callback.data.replace("add_day_", ""), corpus)
+            print(product)
             #alerts that game is in basket 
             await callback.answer(text=f"Игра '{product[0][0]}' добавлена в корзину")
 
             #appends game's name and rental period to basket list
-            choices.append(product[0][0] + " - 📅 1 день")
+            choices.append(product[0][0])
             #summarise game's prices with basket variables
-            final_price += int(product[0][1]) + int(product[0][3])
+            final_price += int(product[0][1]) #int(product[0][1]) + int(product[0][3])
             rent_price += int(product[0][1])
-            deposit_price += int(product[0][3])
+            floor = int(product[0][2])
 
             #sets that a game is unavailable
             add_value(product[0][0], 0)
@@ -325,7 +337,7 @@ async def add_to_basket(callback: types.CallbackQuery):
         if callback.data.replace("add_week_", "") not in choices:
             #gets game's info from db
             sql_start()
-            product = await get_info(callback.data.replace("add_week_", ""))
+            product = await get_info(callback.data.replace("add_week_", ""), corpus)
             #alerts that game is in basket 
             await callback.answer(text=f"Игра '{product[0][0]}' добавлена в корзину")
             
@@ -359,7 +371,7 @@ async def remove_from_basket(callback: types.CallbackQuery):
 
             #gets game's info from db
             sql_start()
-            product = await get_info(game_name)
+            product = await get_info(game_name, corpus)
             #alerts that game has been removed from basket
             await callback.answer(text=f"Игра '{game_name}' убрана из корзины")
 
@@ -389,7 +401,7 @@ async def remove_from_basket(callback: types.CallbackQuery):
 
             #gets game's info from db
             sql_start()
-            product = await get_info(game_name)
+            product = await get_info(game_name, corpus)
             #alerts that game has been removed from basket
             await callback.answer(text=f"Игра '{game_name}' убрана из корзины")
 
@@ -411,7 +423,7 @@ async def load_more(callback: types.CallbackQuery):
     global message_def, offset, limit, showed
     #load_more function
     if callback.data == "load_more":
-        await print_products(message_def, offset, limit, showed)
+        await print_products(message_def, offset, limit, showed, corpus)
         #appending offset for db
         offset += limit
         #counting showed games
