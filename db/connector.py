@@ -48,15 +48,15 @@ async def print_products(message, offset, limit, showed, frame):
         #sends all info about each product with button to order
         await bot.send_photo(message.chat.id, obj[3] , f'‎\n🥏 <b>{obj[0]}</b>\n\n🔹 Цена: {obj[1]}\n\n', parse_mode="html", reply_markup = add_markup)
     #counts how many games are in db
-    row_counter = cursor.execute("SELECT COUNT(*) FROM {frame} WHERE quantity > 0").fetchone()
+    row_counter = cursor.execute(f"SELECT COUNT(*) FROM {frame} WHERE quantity > 0;").fetchone()
     counter = row_counter[0]
     #cheks if it is ok to show load more button
     if counter > showed and counter != showed:
-        await bot.send_message(message.chat.id, f"Показано <b>{showed}</b> игр из <b>{counter}</b>", parse_mode='html', reply_markup = load_markup)
+        await bot.send_message(message.chat.id, f"Показано <b>{showed}</b> позиции из <b>{counter}</b>", parse_mode='html', reply_markup = load_markup)
     elif counter < showed:
-        await bot.send_message(message.chat.id, f"Показано <b>{counter}</b> игр из <b>{counter}</b>", parse_mode='html')    
+        await bot.send_message(message.chat.id, f"Показано <b>{counter}</b> позиции из <b>{counter}</b>", parse_mode='html')
     else:
-        await bot.send_message(message.chat.id, f"Показано <b>{showed}</b> игр из <b>{counter}</b>", parse_mode='html')
+        await bot.send_message(message.chat.id, f"Показано <b>{showed}</b> позиции из <b>{counter}</b>", parse_mode='html')
 
 #gets paricular game's info
 async def get_info(name, frame):
