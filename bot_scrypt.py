@@ -345,26 +345,6 @@ async def add_to_basket(callback: types.CallbackQuery):
             #sets that a game is unavailable
             add_value(product[0][0], product[0][3] - 1, corpus)
     
-    #adds game's price per week and info to basket  
-    elif callback.data.startswith("add_week_"):
-        #if game is not in basket
-        if callback.data.replace("add_week_", "") not in choices:
-            #gets game's info from db
-            sql_start()
-            product = await get_info(callback.data.replace("add_week_", ""), corpus)
-            #alerts that game is in basket 
-            await callback.answer(text=f"Игра '{product[0][0]}' добавлена в корзину")
-            
-            #appends game's name and rental period to basket lis
-            choices.append(product[0][0] + " - 📅 7 дней")
-            #summarise game's prices with basket variables
-            final_price += int(product[0][2]) + int(product[0][3])
-            rent_price += int(product[0][2])
-            deposit_price += int(product[0][3])
-
-            #sets that a game is unavailable
-            add_value(product[0][0], 0, corpus)
-    
 #remove from basket functions
 @dp.callback_query_handler(lambda c: c.data.startswith("rem_"))
 async def remove_from_basket(callback: types.CallbackQuery):
