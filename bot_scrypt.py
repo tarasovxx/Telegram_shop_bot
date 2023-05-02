@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 #importing bot 
 from create_bot import bot, dp
 #importing all database functions 
-from db import sql_start, add_value, add_user, add_order, print_products, get_info, checker, receive_method, add_suggestion, pay_method_db, add_check, get_check, delete_check
+from db import sql_start, add_value, add_user, add_order, print_products, get_info, checker, receive_method, add_suggestion, pay_method_db, add_check, get_check, delete_check, get_floor
 #importing all keyboards
 from markups import kb_client, order_markup, main_markup, basket_markup, pick_method_markup, buy_markup, pay_method, cash_markup, menu_markup, basket_main_markup, pay_menu
 #importing all admon functions
@@ -58,10 +58,10 @@ async def begin(message: types.Message):
 @dp.message_handler(commands = ["basket"])
 async def basket_show(message: types.Message):
     global choices
-    basket_games = "\n\n🎲 ".join(choices)
+    basket_games = "\n\n🍫 ".join(choices)
     #if basket is not empty
     if choices != []:
-        await bot.send_message(message.chat.id, "<b>Корзина: </b>\n\n🎲 {games}\n\n<b>Сумма аренды:</b> {rent}\n\n<b>Сумма залога:</b> {deposit_price}\n\n<b>Общая сумма:</b> {final_price} ".format(games=basket_games, rent=rent_price, final_price=final_price, deposit_price=deposit_price), 
+        await bot.send_message(message.chat.id, "<b>Корзина: </b>\n\n🍫 {games}\n\n<b>Сумма аренды:</b> {rent}\n\n<b>Сумма залога:</b> {deposit_price}\n\n<b>Общая сумма:</b> {final_price} ".format(games=basket_games, rent=rent_price, final_price=final_price, deposit_price=deposit_price),
                         parse_mode="html", reply_markup = basket_markup)
     #if basket is empty
     elif choices == []:
@@ -126,8 +126,9 @@ async def text(message: types.Message):
 
     #if message text = basket
     elif message.text == "🗑 Корзина":
-        basket_games = "\n\n🎲 ".join(choices)
+        basket_games = "\n\n🍫 ".join(choices)
         #if basket is not empty
+        ff = []
         if choices != []:
             await bot.send_message(message.chat.id, "<b>Корзина: </b>\n\n🍫 {games}\n\n<b>Цена:</b> {rent}\n\n<b>Общая сумма:</b> {final_price} ".format(games=basket_games, rent=rent_price, final_price=final_price),
                             parse_mode="html", reply_markup = basket_markup)
@@ -145,11 +146,12 @@ async def text(message: types.Message):
             await bot.send_message(message.chat.id, "<b>Вы вышли в главное меню</b>", parse_mode="html", reply_markup = basket_main_markup)
 
     elif message.text == "🌀 О нас":
-        await bot.send_message(message.chat.id, "📘 <b>Borent</b> - это новый сервис, предоставляющий настольные игры в аренду на день и на неделю.\n\n🌟 Ассортимент игр постоянно увеличивается\n\n🎯 Прислушиваемся к вашим предложениям и идеям\n\n🤗 Ждем каждого в нашем сервисе!", parse_mode="html")
-    
+        await bot.send_message(message.chat.id, "", parse_mode="html")
+
     elif message.text == "🆔️ ID":
         #await bot.send_message(message.chat.id, "" , parse_mode="html")#🏮 Ответы на популярные вопросы\n\n🔷 <b>Как мне забрать мой заказ?</b>\n🔹 Вы можете заказать доставку вашего заказа (платно), либо забрать его по адресу(бесплатно).\n\n🔷 <b>Как проходит оплата заказа?</b>\n🔹 После того, как вы оформили заказ, вы можете выбрать способ оплаты: банковская карта, наличные. Оплата наличными принимается только при самовывозе. Вы сможете оплатить заказ банковской картой по ссылке, полученной от бота.\n\n🔷 <b>Как мне вернуть заказ?</b>\n🔹Возврат заказа происходит по адресу:\n\n🔷 <b>Продавец долго не отвечает, что делать?</b>\n🔹 Свяжитесь с ним напрямую, ссылка на чат в телеграмме\n\n
-        await bot.send_message(message.chat.id, f'Ваш ID: {message.from_user.id}\nВаш корпус: {corpus}\n')
+        camp = corpus.replace("_", " ")
+        await bot.send_message(message.chat.id, f'Ваш ID: {message.from_user.id}\nВаш корпус: {camp}\n')
     #if message text = price
     elif message.text == "🖌 Спросить":
         await Ask.question.set()
@@ -166,19 +168,19 @@ async def text(message: types.Message):
             #checks for how long user is going to rent a game
             rent_check = item[-6:]
             #gets game's name
-            game_name = item.split(" -")[0]
+            game_name = item.split("[")[0]
             #if the game is rented for one day
-            if rent_check == "1 день":
+            # if rent_check == "1 день":
                 #adds remove buttons to markup
-                rem_day_button = InlineKeyboardButton(f"Убрать '{game_name}'", callback_data = f"rem_day_{game_name}i{choices_ind}")
-                remove_markup.add(rem_day_button)
-                remove_check.append(game_name)
+            rem_day_button = InlineKeyboardButton(f"Убрать '{game_name}'", callback_data = f"rem_day_{game_name}i{choices_ind}")
+            remove_markup.add(rem_day_button)
+            remove_check.append(game_name)
             #if the game is rented for one week
-            elif rent_check == "7 дней":
+            #elif rent_check == "7 дней":
                 #adds remove buttons to markup
-                rem_week_button = InlineKeyboardButton(f"Убрать '{game_name}'", callback_data = f"rem_week_{game_name}i{choices_ind}")
-                remove_markup.add(rem_week_button)
-                remove_check.append(game_name)
+            #    rem_week_button = InlineKeyboardButton(f"Убрать '{game_name}'", callback_data = f"rem_week_{game_name}i{choices_ind}")
+            #    remove_markup.add(rem_week_button)
+            #    remove_check.append(game_name)
             #equals index of value in choices
             choices_ind += 1
         await bot.send_message(message.chat.id, "Что убрать?", reply_markup= remove_markup)
@@ -319,17 +321,20 @@ async def add_to_basket(callback: types.CallbackQuery):
             product = await get_info(callback.data.replace("add_day_", ""), corpus)
             print(product)
             #alerts that game is in basket 
-            await callback.answer(text=f"Игра '{product[0][0]}' добавлена в корзину")
+            await callback.answer(text=f"Продукт '{product[0][0]}' добавлен в корзину")
 
             #appends game's name and rental period to basket list
-            choices.append(product[0][0])
+
+            ff = await get_floor(product[0][0], corpus)
+            # choices[i] = choices[i] + " Этаж: " + str(ff[0][0])
+            choices.append(product[0][0] + "[Этаж: " + str(ff[0][0]) + "]")
             #summarise game's prices with basket variables
             final_price += int(product[0][1]) #int(product[0][1]) + int(product[0][3])
             rent_price += int(product[0][1])
             floor = int(product[0][2])
 
             #sets that a game is unavailable
-            add_value(product[0][0], 0)
+            add_value(product[0][0], product[0][3] - 1, corpus)
     
     #adds game's price per week and info to basket  
     elif callback.data.startswith("add_week_"):
@@ -349,7 +354,7 @@ async def add_to_basket(callback: types.CallbackQuery):
             deposit_price += int(product[0][3])
 
             #sets that a game is unavailable
-            add_value(product[0][0], 0)
+            add_value(product[0][0], 0, corpus)
     
 #remove from basket functions
 @dp.callback_query_handler(lambda c: c.data.startswith("rem_"))
@@ -361,11 +366,12 @@ async def remove_from_basket(callback: types.CallbackQuery):
     if callback.data.startswith("rem_day_"):
         basket_name = callback.data.replace("rem_day_", "")
         #getting the name of a game and game's index in choices list
-        game_name_ind = basket_name.split(" -")[0]
+        game_name_ind = basket_name.split("[")[0]
         #getting game's index in choices list
         choices_index = game_name_ind.split("i")[1]
         #getting game's name
         game_name = game_name_ind.split("i")[0]
+        print(game_name)
         #if game is in basket
         if game_name in remove_check:
 
@@ -373,49 +379,20 @@ async def remove_from_basket(callback: types.CallbackQuery):
             sql_start()
             product = await get_info(game_name, corpus)
             #alerts that game has been removed from basket
-            await callback.answer(text=f"Игра '{game_name}' убрана из корзины")
+            await callback.answer(text=f"Продукт '{game_name}' убран из корзины")
 
             #removes game's name from remove basket(special variable, which contains only names of games)
             remove_check.remove(game_name)
             #removes game from basket
             choices.pop(int(choices_index))
             #subtracts game's prices from basket variables
-            final_price -= int(product[0][1]) + int(product[0][3])
+            final_price -= int(product[0][1]) # + int(product[0][3])
             rent_price -= int(product[0][1])
-            deposit_price -= int(product[0][3])
+            #  deposit_price -= int(product[0][3])
 
             #sets that game is available
-            add_value(game_name, 1)
+            add_value(game_name, product[0][3] + 1, corpus)
 
-    #removes one week game rental from basket
-    elif callback.data.startswith("rem_week_"):
-        basket_name = callback.data.replace("rem_week_", "")
-        #getting the name of a game and game's index in choices list
-        game_name_ind = basket_name.split(" -")[0]
-        #getting game's index in choices list
-        choices_index = game_name_ind.split("i")[1]
-        #getting game's name
-        game_name = game_name_ind.split("i")[0]
-        #if game is in basket
-        if game_name in remove_check:
-
-            #gets game's info from db
-            sql_start()
-            product = await get_info(game_name, corpus)
-            #alerts that game has been removed from basket
-            await callback.answer(text=f"Игра '{game_name}' убрана из корзины")
-
-            #removes game's name from remove basket(special variable, which contains only names of games)
-            remove_check.remove(game_name)
-            #removes game from basket
-            choices.pop(int(choices_index))
-            #subtracts game's prices from basket variables
-            final_price -= int(product[0][2]) + int(product[0][3])
-            rent_price -= int(product[0][2])
-            deposit_price -= int(product[0][3])
-
-            #sets that game is available
-            add_value(game_name, 1)
 
 #load more function
 @dp.callback_query_handler(lambda c: c.data)

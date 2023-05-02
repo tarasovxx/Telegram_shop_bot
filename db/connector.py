@@ -14,7 +14,7 @@ def sql_start():
 
 #adds values to database's columns
 def add_value(name, quantity, frame):
-    cursor.execute(f"UPDATE {frame} SET quantity == ? WHERE game_name == ?", (quantity, name))
+    cursor.execute(f"UPDATE {frame} SET quantity == ? WHERE product == ?", (quantity, name))
     base.commit()
     print(name + " Updated successfully")
 
@@ -60,7 +60,7 @@ async def print_products(message, offset, limit, showed, frame):
 
 #gets paricular game's info
 async def get_info(name, frame):
-    product = cursor.execute(f"SELECT product, price, floors FROM {frame} WHERE product == ?", (name,)).fetchmany()
+    product = cursor.execute(f"SELECT product, price, floors, quantity FROM {frame} WHERE product == ?", (name,)).fetchmany()
     print(product)
     base.commit()
     return product
@@ -74,6 +74,13 @@ async def receive_method(adress, is_delivery, username):
 async def pay_method_db(method, username):
     cursor.execute("UPDATE users SET pay_method == ? WHERE username_tg == ?", (method, username))
     base.commit()
+
+async def get_floor(name, frame):
+    product = cursor.execute(f"SELECT floors FROM {frame} WHERE product == ?", (name,)).fetchmany()
+    print(product)
+    #print(product)
+    base.commit()
+    return product
 
 #adds user's suggestion to db
 async def add_suggestion(text, username):
