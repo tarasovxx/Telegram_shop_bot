@@ -100,7 +100,7 @@ async def choose_game(message: types.Message):
 #reply buttons funcrions
 @dp.message_handler(content_types = ['text'])
 async def text(message: types.Message):
-    global offset, limit, showed, message_def, name, choices, remove_check, corpus
+    global offset, limit, showed, message_def, name, choices, remove_check, corpus, rent_price, final_price
 
     #if message text = choose game    if (message.text in ['Корпус 1', 'Корпус 2', 'Корпус 3', 'Кошка']):
     if message.text in ['Корпус 1', 'Корпус 2', 'Корпус 3', 'Кошка']:
@@ -197,8 +197,17 @@ async def text(message: types.Message):
         #adds order's info to db
         sql_start()
         add_order(1, order_games, 0, rent_price, final_price, name)
+        await bot.send_message(message.chat.id, "❇️ Ваш заказ принят. Мы свяжемся с вами как только можно будет забирать.\n\nЕсли с вами не свяжутся в течение 10 минут, пожалуйста, сообщите об этом @alexmansura.",
+                               reply_markup=menu_markup)
+        # sends username to a function to order_functions.py which sends the order info to admin chat
+        # await send_order(name)
+        # removes all games from basket
+        choices = []
+        rent_price = 0
+        final_price = 0
 
-        await bot.send_message(message.chat.id, "🎯 Выберите метод получения заказа", reply_markup = pick_method_markup)    
+
+        # await bot.send_message(message.chat.id, "🎯 Выберите метод получения заказа", reply_markup = pick_method_markup)
     
     #if message text = pickup
     elif message.text == "🚶🏻 Самовывоз":
