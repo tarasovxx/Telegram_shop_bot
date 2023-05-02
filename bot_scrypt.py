@@ -344,7 +344,7 @@ async def add_to_basket(callback: types.CallbackQuery):
 
             #sets that a game is unavailable
             add_value(product[0][0], product[0][3] - 1, corpus)
-    
+
 #remove from basket functions
 @dp.callback_query_handler(lambda c: c.data.startswith("rem_"))
 async def remove_from_basket(callback: types.CallbackQuery):
