@@ -80,7 +80,7 @@ async def basket_show(message: types.Message):
 #choose game by command
 @dp.message_handler(commands = ["choose"])
 async def choose_game(message: types.Message):
-    global offset, limit, showed,message_def
+    global offset, limit, showed, message_def
     offset = 0
     showed = limit
     #checks in db if any games are available and returns number

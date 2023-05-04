@@ -42,6 +42,7 @@ async def print_products(message, offset, limit, showed, frame):
     for obj in cursor.execute(f"SELECT * FROM {frame} WHERE (quantity > 0);").fetchall(): # WHERE available == 1 LIMIT {limit} OFFSET {offset}
         #adds inline markup for adding to basket
         add_markup = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
+        # mas = obj[6].split(",")
         btn = InlineKeyboardButton(f"Добавить '{obj[0]}' в корзину", callback_data = f"add_day_{obj[0]}")
         # week_btn = InlineKeyboardButton(f"Арендовать '{obj[0]}' на неделю", callback_data = f"add_week_{obj[0]}")
         add_markup.add(btn)
