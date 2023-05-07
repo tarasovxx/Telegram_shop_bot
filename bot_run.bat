@@ -2,7 +2,7 @@
 
 call %~dp0venv\Scripts\activate
 
-python App\create_bot.py
-python App\bot_config.py
+python create_bot.py
+python bot_config.py
 
 pause
