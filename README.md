@@ -10,8 +10,8 @@
 1.  Install Python 3.9.7 https://www.python.org/downloads/release/python-397/
 
 2.  REPLACE THE PATH to python.exe in create_venv.bat to your 
-
-3.  Run create_venv.bat
-4.  Add to Meta folder token.txt (TG-bot token) and admins.txt (list of admin ID)
-5.  Run bot_run.bat
+3.  pip install -r requirements.txt
+4.  Run create_venv.bat
+5.  Add to Meta folder token.txt (TG-bot token) and admins.txt (list of admin ID)
+6.  Run bot_run.bat
 ```
